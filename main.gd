@@ -1,6 +1,6 @@
 extends TextureRect
 
-const time_thresh : float = 1.0
+const time_thresh : float = 1/60
 var time_i : float = 0.0
 var time_count : float = time_thresh
 
@@ -59,7 +59,7 @@ func _ready() -> void:
 func _setup_compute_shader():
 	sampler = rd.sampler_create(sampler_state)
 
-	var img := texture.get_image().duplicate(true)
+	var img := texture.get_image()
 	img.convert(Image.FORMAT_RGBAF)
 	
 	input_tex = rd.texture_create(format_in, view_input, [img.get_data()])
