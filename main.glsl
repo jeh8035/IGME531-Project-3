@@ -30,11 +30,11 @@ void main() {
     ivec2 texel = ivec2(gl_GlobalInvocationID.xy);
     
     vec2 uv = texel / 512.0;
-    //uv.x += texel.x / 512.0;
+    uv.x += 10.0 / 512.0;
     
     vec4 color = texture(INPUT_TEXTURE, uv);
     
-    imageStore(OUTPUT_TEXTURE, texel, vec4(1.0, 0.0, 0.0, 1.0));
+    imageStore(OUTPUT_TEXTURE, texel, color);
     
     //imageStore(color.xy, texel, color);
 
