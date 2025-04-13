@@ -42,7 +42,7 @@ func _ready() -> void:
 	format.height = screen_size.y
 	format.usage_bits = RenderingDevice.TEXTURE_USAGE_CAN_UPDATE_BIT | RenderingDevice.TEXTURE_USAGE_STORAGE_BIT | RenderingDevice.TEXTURE_USAGE_CAN_COPY_FROM_BIT
 	
-	var view = RDTextureView.new()
+	var view := RDTextureView.new()
 	
 	# Output Image
 	var output_image := Image.create(format.width, format.height, false, Image.FORMAT_RGBAF)
@@ -88,6 +88,18 @@ func _process(delta: float) -> void:
 		
 		var byte_data : PackedByteArray = rd.texture_get_data(output_tex, 0)
 		var image := Image.create_from_data(screen_size.x, screen_size.y, false, Image.FORMAT_RGBAF, byte_data)
+		
+		if Input.is_action_pressed("mouse_click"):
+			var mouse_pos : Vector2 = get_viewport().get_mouse_position()
+			const radius = 20
+			for x : int in range(-radius, radius):
+				for y : int in range(-radius, radius):
+					if pow(x, 2) + pow(y, 2) < pow(radius, 2):
+						var abs_pos := mouse_pos + Vector2(x, y)
+						abs_pos.x = clamp(abs_pos.x, 0, screen_size.x)
+						abs_pos.y = clamp(abs_pos.y, 0, screen_size.y)
+						image.set_pixel(abs_pos.x, abs_pos.y, Color.WHITE)
+		
 		texture = ImageTexture.create_from_image(image)
 		
 		_setup_compute_shader()
