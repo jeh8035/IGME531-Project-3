@@ -56,8 +56,8 @@ vec2 getFlowField(vec2 uv) {
         //vec2(pNoise(uv * 10.0), pNoise(uv * 10.0 + vec2(500.0)));
 }
 
-float getNeighbors(sampler2D tex, vec2 uv, vec2 tex_pixel_size) {
-    float total = 0.0;
+vec3 getNeighbors(sampler2D tex, vec2 uv, vec2 tex_pixel_size) {
+    vec3 total = vec3(0.0);
 
     float avg = 1.0;
     for (float x = -1.0; x < 2.0; x++) {
@@ -72,7 +72,7 @@ float getNeighbors(sampler2D tex, vec2 uv, vec2 tex_pixel_size) {
                 avg += effect;
             }
             
-            total += effect * texture(tex, pos).x;
+            total += texture(tex, pos).xyz * effect;
         }
     }
 
@@ -86,10 +86,10 @@ void main() {
     ivec2 texel = ivec2(gl_GlobalInvocationID.xy);
     vec2 uv = texel / vec2(WIDTH, HEIGHT);
     
-    float result = getNeighbors(INPUT_TEXTURE, uv, screen_size);
+    vec3 result = getNeighbors(INPUT_TEXTURE, uv, screen_size);
     //COLOR = vec4(result + 0.5, result, result, 1.0);
     
-    vec4 color = vec4(result, result, result, 1.0);
+    vec4 color = vec4(result.xyz, 1.0);
     
     imageStore(OUTPUT_TEXTURE, texel, color);
     
