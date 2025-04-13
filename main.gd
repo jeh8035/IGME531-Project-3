@@ -18,6 +18,9 @@ var shader : RID
 
 var rd : RenderingDevice
 
+var color : int = 0
+const colors = [Color.WHITE, Color.BLACK]
+
 func _ready() -> void:
 	screen_size = Vector2(floor(texture.get_size().x), floor(texture.get_size().y))
 	
@@ -32,7 +35,9 @@ func _ready() -> void:
 	
 	# Create render device	
 	rd = RenderingServer.create_local_rendering_device()
-	var shader_file := load("res://main.glsl")
+	var shader_file : RDShaderFile = load("res://main.glsl")
+	
+	
 	var shader_spirv: RDShaderSPIRV = shader_file.get_spirv()
 	shader = rd.shader_create_from_spirv(shader_spirv)
 	
@@ -51,6 +56,10 @@ func _ready() -> void:
 	output_tex_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_IMAGE
 	output_tex_uniform.binding = 0
 	output_tex_uniform.add_id(output_tex)
+	
+	# Screen size
+	var screen_size_uniform = RDUniform.new()
+	screen_size_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_INPUT_ATTACHMENT
 	
 	# Input image
 	_setup_compute_shader()
@@ -91,15 +100,23 @@ func _process(delta: float) -> void:
 		
 		if Input.is_action_pressed("mouse_click"):
 			var mouse_pos : Vector2 = get_viewport().get_mouse_position()
+			mouse_pos *= Vector2(screen_size) / Vector2(get_viewport().size)
 			const radius = 20
 			for x : int in range(-radius, radius):
 				for y : int in range(-radius, radius):
 					if pow(x, 2) + pow(y, 2) < pow(radius, 2):
 						var abs_pos := mouse_pos + Vector2(x, y)
-						abs_pos.x = clamp(abs_pos.x, 0, screen_size.x)
-						abs_pos.y = clamp(abs_pos.y, 0, screen_size.y)
-						image.set_pixel(abs_pos.x, abs_pos.y, Color.WHITE)
+						abs_pos.x = clamp(abs_pos.x, 0, screen_size.x - 1)
+						abs_pos.y = clamp(abs_pos.y, 0, screen_size.y - 1)
+						image.set_pixel(abs_pos.x, abs_pos.y, colors[color])
 		
 		texture = ImageTexture.create_from_image(image)
 		
 		_setup_compute_shader()
+
+
+func _input(event: InputEvent) -> void:
+	if event.is_action_pressed("change_color"):
+		color += 1
+		if color >= colors.size(): color = 0
+		

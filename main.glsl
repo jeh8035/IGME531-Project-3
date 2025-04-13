@@ -1,6 +1,9 @@
 #[compute]
 #version 450
 
+#define WIDTH 512
+#define HEIGHT 512
+
 // Invocations in the (x, y, z) dimension.
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
@@ -48,7 +51,9 @@ float pNoise(vec2 p){
 
 
 vec2 getFlowField(vec2 uv) {
-    return vec2(pNoise(uv), pNoise(uv + vec2(5.0)));
+    //return vec2(cos(uv.x * 10.0), sin(uv.y * 10.0));
+    return vec2(cos(uv.y * 5.0 * sqrt(pNoise(uv).x)), 0.0);// +
+        //vec2(pNoise(uv * 10.0), pNoise(uv * 10.0 + vec2(500.0)));
 }
 
 float getNeighbors(sampler2D tex, vec2 uv, vec2 tex_pixel_size) {
@@ -76,10 +81,10 @@ float getNeighbors(sampler2D tex, vec2 uv, vec2 tex_pixel_size) {
 
 // The code we want to execute in each invocation
 void main() {
-    vec2 screen_size = 1.0 / vec2(512.0);
+    vec2 screen_size = 1.0 / vec2(WIDTH, HEIGHT);
 
     ivec2 texel = ivec2(gl_GlobalInvocationID.xy);
-    vec2 uv = texel / 512.0;
+    vec2 uv = texel / vec2(WIDTH, HEIGHT);
     
     float result = getNeighbors(INPUT_TEXTURE, uv, screen_size);
     //COLOR = vec4(result + 0.5, result, result, 1.0);
