@@ -12,6 +12,7 @@ var sampler : RID
 var sampler_state : RDSamplerState
 var format_in : RDTextureFormat
 var view_input : RDTextureView
+var sampler_uniform : RDUniform
 
 var output_tex_uniform : RDUniform
 var shader : RID
@@ -19,12 +20,13 @@ var shader : RID
 var rd : RenderingDevice
 
 var color : int = 0
-const colors = [Color.WHITE, Color.BLACK]
+const colors = [Color.WHITE, Color.BLACK, Color.BLUE, Color.RED, Color.GREEN, Color.CYAN, Color.MAGENTA, Color.YELLOW]
 
 func _ready() -> void:
 	screen_size = Vector2(floor(texture.get_size().x), floor(texture.get_size().y))
 	
 	# Input texture info
+	sampler_uniform = RDUniform.new()
 	view_input = RDTextureView.new()
 	sampler_state = RDSamplerState.new()
 	format_in = RDTextureFormat.new()
@@ -56,11 +58,7 @@ func _ready() -> void:
 	output_tex_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_IMAGE
 	output_tex_uniform.binding = 0
 	output_tex_uniform.add_id(output_tex)
-	
-	# Screen size
-	var screen_size_uniform = RDUniform.new()
-	screen_size_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_INPUT_ATTACHMENT
-	
+
 	# Input image
 	_setup_compute_shader()
 
@@ -71,13 +69,13 @@ func _setup_compute_shader():
 	var img := texture.get_image()
 	img.convert(Image.FORMAT_RGBAF)
 	
+	if input_tex: rd.free_rid(input_tex)
 	input_tex = rd.texture_create(format_in, view_input, [img.get_data()])
-	var sampler_uniform = RDUniform.new()
 	sampler_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_SAMPLER_WITH_TEXTURE
 	sampler_uniform.binding = 1
+	sampler_uniform.clear_ids()
 	sampler_uniform.add_id(sampler)
 	sampler_uniform.add_id(input_tex)
-	
 	var uniform_set := rd.uniform_set_create([output_tex_uniform, sampler_uniform], shader, 0)
 
 	var pipeline := rd.compute_pipeline_create(shader)
